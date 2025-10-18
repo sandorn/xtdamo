@@ -154,3 +154,12 @@ ENV/
 # 临时文件
 *.tmp
 *.temp
+
+# 构建文件
+build/
+dist/
+*.egg-info/
+*.egg
+
+# 发布相关
+.twine
