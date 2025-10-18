@@ -6,22 +6,46 @@ xtdamo 是一个基于大漠插件（Dm) 的封装库，用于自动化操作，
 
 xtdamo 提供了对大漠插件的高级封装，简化了与窗口、鼠标、键盘和图像识别相关的操作。主要功能包括：
 
-- 窗口绑定与管理
-- 鼠标移动与点击
-- 键盘按键模拟
-- 图像识别与查找
-- 文本识别与查找
-- 文件与注册表操作
+-   窗口绑定与管理
+-   鼠标移动与点击
+-   键盘按键模拟
+-   图像识别与查找
+-   文本识别与查找
+-   文件与注册表操作
 
 ## 安装
 
-确保你已经安装了 Python 3.x，并可以通过 pip 安装 xtdamo：
+### 系统要求
+
+-   Python 3.8+
+-   Windows 操作系统
+-   大漠插件（dm.dll）
+
+### 安装方法
+
+1. **从源码安装**：
+
+```bash
+git clone https://github.com/sandorn/xtdamo.git
+cd xtdamo
+pip install -e .
+```
+
+2. **从 PyPI 安装**（计划中）：
 
 ```bash
 pip install xtdamo
 ```
 
-此外，你需要将大漠插件（dm.dll）放置在项目目录中，或指定其路径。
+### 大漠插件配置
+
+将大漠插件（dm.dll）放置在项目目录中，或通过环境变量指定路径：
+
+```bash
+# 设置大漠插件认证信息（可选）
+set DM_REG_CODE=your_registration_code
+set DM_VER_INFO=your_version_info
+```
 
 ## 使用示例
 
@@ -30,29 +54,45 @@ pip install xtdamo
 ```python
 from xtdamo import DmExcute
 
+# 使用默认配置初始化
+dm = DmExcute()
+
+# 或指定大漠插件路径
 dm = DmExcute(dm_dirpath="path_to_dm_dll")
 ```
 
-### 绑定窗口
+### 基本操作
 
 ```python
-from xtdamo.apiproxy import ApiProxy
+# 获取插件信息
+print(f"版本: {dm.ver()}")
+print(f"ID: {dm.GetID()}")
 
-api_proxy = ApiProxy(dm)
-hwnd = 123456  # 窗口句柄
-api_proxy.绑定窗口(hwnd)
+# 获取当前鼠标位置
+x, y = dm.position
+print(f"鼠标位置: ({x}, {y})")
+
+# 移动鼠标
+dm.move_to(100, 200)
+
+# 安全点击
+dm.safe_click(300, 400)
 ```
 
-### 查找并点击图像
+### 窗口操作
 
 ```python
-api_proxy.找图单击(0, 0, 800, 600, "image.png")
-```
+# 查找窗口
+hwnd = dm.FindWindow("Notepad", "无标题 - 记事本")
 
-### 查找并点击文字
+# 绑定窗口
+dm.BindWindow(hwnd, "gdi", "windows3", "windows", 101)
 
-```python
-api_proxy.找字单击(0, 0, 800, 600, "开始", "FFFFFF")
+# 在窗口内查找图像
+result = dm.FindPic(0, 0, 800, 600, "button.png")
+if result[0] == 1:
+    x, y = result[1], result[2]
+    dm.safe_click(x, y)
 ```
 
 ### 鼠标操作

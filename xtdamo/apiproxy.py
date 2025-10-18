@@ -1,3 +1,28 @@
+# !/usr/bin/env python3
+"""
+==============================================================
+Description  : 高级功能封装模块 - 提供图像识别、文本识别、高级操作等功能
+Develop      : VSCode
+Author       : sandorn sandorn@live.cn
+LastEditTime : 2025-10-18 22:00:00
+Github       : https://github.com/sandorn/xtdamo
+
+本模块提供以下核心功能:
+- 图像识别与查找 (FindPic, FindPicEx)
+- 文本识别与查找 (FindStr, FindStrEx)
+- 颜色识别与查找 (FindColor, FindColorEx)
+- 高级操作封装 (safe_click, find_and_click)
+- 智能等待与重试机制
+
+主要特性:
+- 支持多种图像格式识别
+- 智能相似度匹配
+- 自动重试机制
+- 异常处理与错误恢复
+- 性能优化的查找算法
+==============================================================
+"""
+
 from __future__ import annotations
 
 import math
@@ -5,7 +30,8 @@ import random
 from time import sleep
 from typing import Any
 
-from bdtime import tt
+from .time_utils import TimeTracker
+from .config import Config
 
 
 class ApiProxy:
@@ -17,37 +43,49 @@ class ApiProxy:
             ValueError: 如果dmobject为None
         """
         if not dm_instance:
-            raise ValueError('dmobject参数不能为空')
+            raise ValueError("dmobject参数不能为空")
         self.dm_instance = dm_instance
-        self._last_error = ''  # 新增错误记录属性
+        self._last_error = ""  # 新增错误记录属性
 
     def 绑定窗口(
         self,
         hwnd: int,
-        display: str = ['normal', 'gdi', 'gdi2', 'dx', 'dx2'][1],
-        mouse: str = ['normal', 'windows', 'windows2', 'windows3', 'dx', 'dx2'][3],
-        keypad: str = ['normal', 'windows', 'dx'][1],
-        pulic: str = 'dx.public.fake.window.min|dx.public.hack.speed',
-        mode: int = [0, 1, 2, 3, 4, 5, 6, 7, 101, 103][8],
+        display: str = None,
+        mouse: str = None,
+        keypad: str = None,
+        pulic: str = "dx.public.fake.window.min|dx.public.hack.speed",
+        mode: int = None,
     ) -> bool:
         """绑定窗口
         Args:
             hwnd: 窗口句柄
-            display: 显示模式 (default: "gdi")
-            mouse: 鼠标模式 (default: "windows3")
-            keypad: 键盘模式 (default: "windows")
+            display: 显示模式 (默认使用Config配置)
+            mouse: 鼠标模式 (默认使用Config配置)
+            keypad: 键盘模式 (默认使用Config配置)
             public: 公共参数 (default: dx.public.fake.window.min|dx.public.hack.speed)
-            mode: 绑定模式 (default: 101)
+            mode: 绑定模式 (默认使用Config配置)
         Returns:
             bool: 绑定是否成功
         """
-        ret = self.dm_instance.BindWindowEx(hwnd, display, mouse, keypad, pulic, mode)
+        # 使用Config中的默认配置
+        bind_config = Config.get_bind_config(
+            display=display, mouse=mouse, keypad=keypad, mode=mode
+        )
+
+        ret = self.dm_instance.BindWindowEx(
+            hwnd,
+            bind_config["display"],
+            bind_config["mouse"],
+            bind_config["keypad"],
+            pulic,
+            bind_config["mode"],
+        )
         if ret != 1:
             self._last_error = self.dm_instance.GetLastError()
-            print(f'窗口绑定失败! 错误代码: {self._last_error}')
+            print(f"窗口绑定失败! 错误代码: {self._last_error}")
             return False
 
-        print('窗口绑定成功!')
+        print("窗口绑定成功!")
         return True
 
     def 解绑窗口(self):
@@ -60,7 +98,7 @@ class ApiProxy:
 
     def _parse_result(self, ret: str):
         """解析坐标结果，增加容错处理，始终返回(x, y)格式的坐标二元组"""
-        parts = (ret or '').split('|')
+        parts = (ret or "").split("|")
         try:
             if len(parts) >= 3 and parts[1].isdigit() and parts[2].isdigit():
                 return (int(parts[1]), int(parts[2]))
@@ -83,14 +121,17 @@ class ApiProxy:
         click=False,
         reset_pos=False,
         disappear=False,
-        confidence=0.9,
+        confidence=Config.DEFAULT_SIMILARITY,
     ):
-        """通用查找执行方法（使用bdtime优化）"""
+        """通用查找执行方法（使用TimeTracker优化）"""
         state = False
         x: int = 0
         y: int = 0
 
-        while tt.during(timeout):
+        # 创建时间跟踪器
+        time_tracker = TimeTracker(timeout)
+
+        while time_tracker.during():
             x, y = self._parse_result(find_func(x1, y1, x2, y2, target))
 
             if x > 0 and y > 0:
@@ -114,7 +155,15 @@ class ApiProxy:
             y1,
             x2,
             y2,
-            lambda x1, y1, x2, y2, t: self.dm_instance.FindStrE(x1, y1, x2, y2, t, color, 0.9),
+            lambda x1, y1, x2, y2, t: self.dm_instance.FindStrE(
+                x1,
+                y1,
+                x2,
+                y2,
+                t,
+                color,
+                Config.DEFAULT_SIMILARITY,
+            ),
             text,
             timeout,
             click=True,
@@ -128,7 +177,9 @@ class ApiProxy:
             y1,
             x2,
             y2,
-            lambda x1, y1, x2, y2, t: self.dm_instance.FindStrE(x1, y1, x2, y2, t, color, 0.9),
+            lambda x1, y1, x2, y2, t: self.dm_instance.FindStrE(
+                x1, y1, x2, y2, t, color, Config.DEFAULT_SIMILARITY
+            ),
             text,
             timeout,
             click=True,
@@ -137,8 +188,13 @@ class ApiProxy:
 
     def 找字返回坐标(self, x1, y1, x2, y2, text, color, timeout=0):
         state, (x, y) = False, (0, 0)
-        while tt.during(timeout):
-            x, y = self._parse_result(self.dm_instance.FindStrE(x1, y1, x2, y2, text, color, 0.9))
+        time_tracker = TimeTracker(timeout)
+        while time_tracker.during():
+            x, y = self._parse_result(
+                self.dm_instance.FindStrE(
+                    x1, y1, x2, y2, text, color, Config.DEFAULT_SIMILARITY
+                )
+            )
             if x > 0 and y > 0:
                 state = True
                 break
@@ -150,19 +206,23 @@ class ApiProxy:
             y_1,
             x_2,
             y_2,
-            lambda *args: self.dm_instance.FindStrE(*args, 0.9),
+            lambda *args: self.dm_instance.FindStrE(*args, Config.DEFAULT_SIMILARITY),
             字名,
             t,
         )
 
-    def 找图单击至消失(self, x1, y1, x2, y2, name, timeout=0, scan_mode=0, reset_pos=False):
+    def 找图单击至消失(
+        self, x1, y1, x2, y2, name, timeout=0, scan_mode=0, reset_pos=False
+    ):
         """优化参数命名和lambda表达式"""
         return self._find_and_act(
             x1,
             y1,
             x2,
             y2,
-            lambda x1, y1, x2, y2, n: self.dm_instance.FindPicE(x1, y1, x2, y2, n, '000000', 0.9, scan_mode),
+            lambda x1, y1, x2, y2, n: self.dm_instance.FindPicE(
+                x1, y1, x2, y2, n, "000000", Config.DEFAULT_SIMILARITY, scan_mode
+            ),
             name,
             timeout,
             click=True,
@@ -176,7 +236,9 @@ class ApiProxy:
             y1,
             x2,
             y2,
-            lambda x1, y1, x2, y2, n: self.dm_instance.FindPicE(x1, y1, x2, y2, n, '000000', 0.9, scan_mode),
+            lambda x1, y1, x2, y2, n: self.dm_instance.FindPicE(
+                x1, y1, x2, y2, n, "000000", Config.DEFAULT_SIMILARITY, scan_mode
+            ),
             name,
             timeout,
             click=True,
@@ -190,7 +252,9 @@ class ApiProxy:
             y1,
             x2,
             y2,
-            lambda x1, y1, x2, y2, n: self.dm_instance.FindPicE(x1, y1, x2, y2, n, '000000', 0.9, scan_mode),
+            lambda x1, y1, x2, y2, n: self.dm_instance.FindPicE(
+                x1, y1, x2, y2, n, "000000", Config.DEFAULT_SIMILARITY, scan_mode
+            ),
             name,
             timeout,
         )
@@ -202,12 +266,16 @@ class ApiProxy:
             y1,
             x2,
             y2,
-            lambda x1, y1, x2, y2, n: self.dm_instance.FindPicE(x1, y1, x2, y2, n, '000000', 0.9, scan_mode),
+            lambda x1, y1, x2, y2, n: self.dm_instance.FindPicE(
+                x1, y1, x2, y2, n, "000000", Config.DEFAULT_SIMILARITY, scan_mode
+            ),
             name,
             timeout,
         )
 
-    def 简易识字(self, x1, y1, x2, y2, color, confidence=0.9, timeout=0):
+    def 简易识字(
+        self, x1, y1, x2, y2, color, confidence=Config.DEFAULT_SIMILARITY, timeout=0
+    ):
         """优化后的OCR识别方法"""
 
         def ocr_operation():
@@ -215,10 +283,11 @@ class ApiProxy:
             return result if result else None
 
         if timeout > 0:
-            while tt.during(timeout):
+            time_tracker = TimeTracker(timeout)
+            while time_tracker.during():
                 if text := ocr_operation():
                     return text
-                sleep(random.uniform(0.05, 0.4))
+                sleep(random.uniform(Config.DEFAULT_MOUSE_DELAY, 0.4))
         else:
             if text := ocr_operation():
                 return text
@@ -274,7 +343,9 @@ class ApiProxy:
         # 遍历完所有圈数未找到目标，返回失败
         return False
 
-    def 散点渐开找鼠标(self, 起点坐标X, 起点坐标Y, 鼠标特征码, radius=2, radius步长=0.6, 圈数判定=80):
+    def 散点渐开找鼠标(
+        self, 起点坐标X, 起点坐标Y, 鼠标特征码, radius=2, radius步长=0.6, 圈数判定=80
+    ):
         for _ in range(圈数判定):
             xzb = 起点坐标X + math.cos(radius) + radius * math.sin(radius)
             yzb = 起点坐标Y + math.sin(radius) - radius * math.cos(radius)

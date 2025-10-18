@@ -1,13 +1,25 @@
-# !/usr/bin/env python
+# !/usr/bin/env python3
 """
 ==============================================================
-Description  : 头部注释
+Description  : 键盘操作模块 - 提供键盘按键模拟、组合键、输入文本等功能
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
-Date         : 2025-05-28 13:53:45
-LastEditTime : 2025-06-05 14:01:02
-FilePath     : /CODE/xjLib/xt_damo/key.py
-Github       : https://github.com/sandorn/home
+LastEditTime : 2025-10-18 22:00:00
+Github       : https://github.com/sandorn/xtdamo
+
+本模块提供以下核心功能:
+- 单键按键模拟 (KeyDown, KeyUp, KeyPress)
+- 组合键操作 (Ctrl+C, Alt+Tab等)
+- 文本输入 (SendString)
+- 按键状态检测 (GetKeyState)
+- 键盘延迟控制
+
+主要特性:
+- 支持所有标准键盘按键
+- 支持组合键和修饰键
+- 可配置按键延迟
+- 支持长按和短按
+- 异常处理和错误恢复
 ==============================================================
 """
 
@@ -16,11 +28,12 @@ from __future__ import annotations
 from time import sleep
 from typing import Any
 
-from bdtime import vk
+from .config import Config
+from .time_utils import VirtualKeys
 
 
 class Key:
-    def __init__(self, dm_instance: Any, key: str | int = 'k') -> None:
+    def __init__(self, dm_instance: Any, key: str | int = "k") -> None:
         """
         键盘操作控制器初始化方法
 
@@ -36,7 +49,7 @@ class Key:
             - self.ord: 存储按键的ASCII码(通过conv_ord方法转换)
         """
         if not dm_instance:
-            raise ValueError('dmobject cannot be None')
+            raise ValueError("dmobject cannot be None")
         self.dm_instance = dm_instance
 
         # 处理按键字符形式
@@ -45,7 +58,7 @@ class Key:
         elif isinstance(key, int):
             self.chr = str(key).upper()
         else:
-            self.chr = 'None'  # 非字符串类型默认值
+            self.chr = "None"  # 非字符串类型默认值
 
         # 转换按键为ASCII码
         self.ord = self.conv_ord(key)
@@ -70,11 +83,11 @@ class Key:
         """
         key = key0  # 暂存原始输入值
         # 处理字符串类型输入
-        if key.__class__.__name__ == 'str':
+        if key.__class__.__name__ == "str":
             # 转换为大写后获取ASCII码（兼容小写输入）
             key = ord(key.upper())
         # 处理整数类型输入（仅限0-9）
-        elif key.__class__.__name__ == 'int' and key >= 0 and key <= 9:
+        elif key.__class__.__name__ == "int" and key >= 0 and key <= 9:
             # 数字转字符串（如5→"5"）后获取ASCII码
             key = str(key)
             key = ord(key)
@@ -85,32 +98,32 @@ class Key:
 
     def conv(self, key0):
         key = key0
-        return self.ord if key == vk.Constant else self.conv_ord(key)
+        return self.ord if key == VirtualKeys.ENTER else self.conv_ord(key)
 
-    def state(self, key=vk.Constant):
+    def state(self, key=VirtualKeys.ENTER):
         key = self.conv(key)
         return self.dm_instance.GetKeyState(key)
 
-    def press(self, key0=vk.Constant):
+    def press(self, key0=VirtualKeys.ENTER):
         key = self.conv_ord(key0)
 
         return self.dm_instance.KeyPress(key)
 
-    def down(self, key0=vk.Constant):
+    def down(self, key0=VirtualKeys.ENTER):
         key = self.conv_ord(key0)
 
         return self.dm_instance.KeyDown(key)
 
-    def up(self, key0=vk.Constant):
+    def up(self, key0=VirtualKeys.ENTER):
         key = self.conv_ord(key0)
 
         return self.dm_instance.KeyUp(key)
 
-    def down_up(self, key0=vk.Constant, t=vk.Time):
+    def down_up(self, key0=VirtualKeys.ENTER, t=Config.DEFAULT_KEYBOARD_DELAY):
         try:
             key = self.conv_ord(key0)
             self.down(key)
             sleep(t)
             self.up(key)
         except Exception as e:
-            raise KeyError(f'按键操作失败: {e}') from e
+            raise KeyError(f"按键操作失败: {e}") from e

@@ -1,13 +1,25 @@
-# !/usr/bin/env python
+# !/usr/bin/env python3
 """
 ==============================================================
-Description  : 头部注释
+Description  : 窗口枚举模块 - 提供窗口查找、枚举、筛选等功能
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
-Date         : 2025-05-21 16:26:08
-LastEditTime : 2025-06-05 10:56:49
-FilePath     : /CODE/xjLib/xt_damo/enum_wind.py
-Github       : https://github.com/sandorn/home
+LastEditTime : 2025-10-18 22:00:00
+Github       : https://github.com/sandorn/xtdamo
+
+本模块提供以下核心功能:
+- 窗口枚举与查找 (EnumWindows, FindWindow)
+- 窗口信息获取 (GetWindowText, GetClassName)
+- 窗口状态检测 (IsWindow, IsWindowVisible)
+- 窗口筛选与排序
+- 进程窗口关联
+
+主要特性:
+- 高性能窗口枚举
+- 智能窗口筛选
+- 支持多种查找条件
+- 窗口状态实时检测
+- 异常处理和错误恢复
 ==============================================================
 """
 from __future__ import annotations

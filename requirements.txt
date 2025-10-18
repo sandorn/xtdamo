@@ -1,0 +1,13 @@
+# xtdamo 项目依赖
+pywin32>=306
+typing-extensions>=4.0.0
+
+# 可选依赖
+cryptography>=3.0.0  # 用于加密功能
+
+# 开发依赖
+pytest>=7.0.0
+pytest-cov>=4.0.0
+black>=22.0.0
+flake8>=5.0.0
+mypy>=1.0.0

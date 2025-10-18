@@ -1,13 +1,25 @@
-# !/usr/bin/env python
+# !/usr/bin/env python3
 """
 ==============================================================
-Description  : 头部注释
+Description  : 鼠标操作模块 - 提供鼠标移动、点击、拖拽、滚轮等功能
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
-Date         : 2025-05-28 13:54:55
-LastEditTime : 2025-05-30 15:57:04
-FilePath     : /CODE/xjLib/xt_damo/mouse.py
-Github       : https://github.com/sandorn/home
+LastEditTime : 2025-10-18 22:00:00
+Github       : https://github.com/sandorn/xtdamo
+
+本模块提供以下核心功能:
+- 鼠标移动 (MoveTo, MoveR)
+- 鼠标点击 (LeftClick, RightClick, MiddleClick)
+- 鼠标拖拽 (LeftDown, LeftUp, Drag)
+- 滚轮操作 (WheelUp, WheelDown)
+- 鼠标状态检测
+
+主要特性:
+- 支持绝对坐标和相对坐标移动
+- 支持左键、右键、中键操作
+- 可配置鼠标延迟
+- 支持拖拽操作
+- 异常处理和错误恢复
 ==============================================================
 """
 
@@ -30,7 +42,7 @@ class Mouse:
             ValueError: 当dmobject为None时抛出
         """
         if not dm_instance:
-            raise ValueError('dmobject cannot be None')
+            raise ValueError("dmobject cannot be None")
         self.dm_instance = dm_instance
 
     @property
@@ -60,12 +72,12 @@ class Mouse:
         try:
             x, y = xy
             if not (isinstance(x, int) and isinstance(y, int)):
-                raise ValueError('坐标值必须为整数')
+                raise ValueError("坐标值必须为整数")
             self.move_to(x, y)
         except (TypeError, ValueError) as e:
-            raise ValueError('请输入格式为(x, y)的坐标元组') from e
+            raise ValueError("请输入格式为(x, y)的坐标元组") from e
 
-    def set_delay(self, delay, model='dx'):
+    def set_delay(self, delay, model="dx"):
         """
         设置鼠标操作延迟
 
@@ -137,7 +149,9 @@ class Mouse:
             self.dm_instance.LeftClick()
             sleep(random.randint(50, 400) / 1000)  # noqa: S311
             if auto_reset_pos:
-                self.dm_instance.MoveTo(x0 + random.randint(50, 300), y0 + random.randint(50, 300))  # noqa: S311
+                self.dm_instance.MoveTo(
+                    x0 + random.randint(50, 300), y0 + random.randint(50, 300)
+                )  # noqa: S311
         except Exception as e:
             self._last_error = str(e)
-            raise KeyError(f'_safe_click点击操作失败: {self._last_error}') from e
+            raise KeyError(f"_safe_click点击操作失败: {self._last_error}") from e
