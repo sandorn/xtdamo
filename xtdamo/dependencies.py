@@ -26,7 +26,6 @@ Github       : https://github.com/sandorn/xtdamo
 from __future__ import annotations
 
 from importlib.util import find_spec
-from typing import Dict, List, Optional
 
 
 class DependencyChecker:
@@ -80,7 +79,7 @@ class DependencyChecker:
             return False
 
     @classmethod
-    def check_dependencies(cls, names: List[str]) -> Dict[str, bool]:
+    def check_dependencies(cls, names: list[str]) -> dict[str, bool]:
         """检查多个依赖是否可用
 
         Args:
@@ -92,7 +91,7 @@ class DependencyChecker:
         return {name: cls.check_dependency(name) for name in names}
 
     @classmethod
-    def get_available_dependencies(cls) -> List[str]:
+    def get_available_dependencies(cls) -> list[str]:
         """获取所有可用的依赖
 
         Returns:
@@ -101,7 +100,7 @@ class DependencyChecker:
         return [name for name in cls.DEPENDENCIES if cls.check_dependency(name)]
 
     @classmethod
-    def get_missing_dependencies(cls) -> List[str]:
+    def get_missing_dependencies(cls) -> list[str]:
         """获取所有缺失的依赖
 
         Returns:
@@ -110,7 +109,7 @@ class DependencyChecker:
         return [name for name in cls.DEPENDENCIES if not cls.check_dependency(name)]
 
     @classmethod
-    def get_dependency_info(cls, name: str) -> Optional[Dict[str, str]]:
+    def get_dependency_info(cls, name: str) -> dict[str, str] | None:
         """获取依赖信息
 
         Args:
@@ -128,8 +127,8 @@ class DependencyChecker:
 
     @classmethod
     def get_installation_commands(
-        cls, missing_deps: Optional[List[str]] = None
-    ) -> List[str]:
+        cls, missing_deps: list[str] | None = None
+    ) -> list[str]:
         """获取安装命令
 
         Args:
@@ -186,17 +185,17 @@ def check_dependency(name: str) -> bool:
     return DependencyChecker.check_dependency(name)
 
 
-def check_dependencies(names: List[str]) -> Dict[str, bool]:
+def check_dependencies(names: list[str]) -> dict[str, bool]:
     """检查多个依赖是否可用"""
     return DependencyChecker.check_dependencies(names)
 
 
-def get_available_dependencies() -> List[str]:
+def get_available_dependencies() -> list[str]:
     """获取所有可用的依赖"""
     return DependencyChecker.get_available_dependencies()
 
 
-def get_missing_dependencies() -> List[str]:
+def get_missing_dependencies() -> list[str]:
     """获取所有缺失的依赖"""
     return DependencyChecker.get_missing_dependencies()
 

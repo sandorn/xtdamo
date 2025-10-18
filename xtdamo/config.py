@@ -24,8 +24,6 @@ Github       : https://github.com/sandorn/xtdamo
 
 from __future__ import annotations
 
-from typing import Dict
-
 
 class Config:
     """基础配置管理类 - 提供默认配置和错误处理"""
@@ -41,7 +39,7 @@ class Config:
     DEFAULT_TIMEOUT: float = 5.0
 
     # 大漠插件错误代码映射
-    ERROR_CODES: Dict[int, str] = {
+    ERROR_CODES: dict[int, str] = {
         -1: "无法连接网络",
         -2: "进程没有以管理员方式运行，win7 win8 vista 2008 建议关闭uac)",
         0: "失败 (未知错误)",
@@ -87,7 +85,7 @@ class Config:
         return cls.ERROR_CODES.get(error_code, f"未知错误代码: {error_code}")
 
     @classmethod
-    def get_bind_config(cls, **kwargs) -> Dict[str, any]:
+    def get_bind_config(cls, **kwargs) -> dict[str, any]:
         """获取窗口绑定配置
 
         Args:
@@ -116,5 +114,4 @@ class Config:
 
         if mode_type == "mode":
             return mode_value in cls.BIND_MODES[mode_type]
-        else:
-            return mode_value in cls.BIND_MODES[mode_type]
+        return mode_value in cls.BIND_MODES[mode_type]

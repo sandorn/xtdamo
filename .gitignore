@@ -145,6 +145,12 @@ Thumbs.db
 *.chw
 *.bat
 
+# 32位Python环境相关
+.venv/
+venv/
+env/
+ENV/
+
 # 临时文件
 *.tmp
 *.temp

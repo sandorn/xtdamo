@@ -30,8 +30,8 @@ import random
 from time import sleep
 from typing import Any
 
-from .time_utils import TimeTracker
 from .config import Config
+from .time_utils import TimeTracker
 
 
 class ApiProxy:
@@ -50,11 +50,11 @@ class ApiProxy:
     def 绑定窗口(
         self,
         hwnd: int,
-        display: str = None,
-        mouse: str = None,
-        keypad: str = None,
+        display: str | None = None,
+        mouse: str | None = None,
+        keypad: str | None = None,
         pulic: str = "dx.public.fake.window.min|dx.public.hack.speed",
-        mode: int = None,
+        mode: int | None = None,
     ) -> bool:
         """绑定窗口
         Args:

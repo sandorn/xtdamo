@@ -51,7 +51,7 @@ def _runas_admin(cmd, ishide=False, waitsed=10):
     # 使用ShellExecuteEx 替代 ShellExecuteW ，以便等待进程完成
     # 结构体大小必须与ctypes.sizeof(SHELLEXECUTEINFO)一致
     class SHELLEXECUTEINFO(ctypes.Structure):
-        _fields_ = [  # noqa
+        _fields_ = [
             ("cbSize", ctypes.c_ulong),
             ("fMask", ctypes.c_ulong),
             ("hwnd", ctypes.c_void_p),

@@ -26,7 +26,6 @@ Github       : https://github.com/sandorn/xtdamo
 from __future__ import annotations
 
 import time
-from typing import Optional
 
 
 class TimeTracker:
@@ -41,7 +40,7 @@ class TimeTracker:
         self.start_time = time.time()
         self.timeout = timeout
 
-    def during(self, timeout: Optional[float] = None) -> bool:
+    def during(self, timeout: float | None = None) -> bool:
         """检查是否在指定时间内
 
         Args:
@@ -90,8 +89,7 @@ def now(format_type: int = 0) -> str:
             time.strftime("%H:%M:%S", time.localtime())
             + f".{int(time.time() * 1000) % 1000:03d}"
         )
-    else:
-        return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
 
 # 虚拟键码常量（替代bdtime.vk）
@@ -151,13 +149,13 @@ class VirtualKeys:
     F = 0x46
     G = 0x47
     H = 0x48
-    I = 0x49
+    I = 0x49  # noqa
     J = 0x4A
     K = 0x4B
     L = 0x4C
     M = 0x4D
     N = 0x4E
-    O = 0x4F
+    O = 0x4F  # noqa
     P = 0x50
     Q = 0x51
     R = 0x52

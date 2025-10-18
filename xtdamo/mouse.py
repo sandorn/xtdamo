@@ -147,11 +147,11 @@ class Mouse:
             x0, y0 = self.position
             self.dm_instance.MoveTo(x, y)
             self.dm_instance.LeftClick()
-            sleep(random.randint(50, 400) / 1000)  # noqa: S311
+            sleep(random.randint(50, 400) / 1000)
             if auto_reset_pos:
                 self.dm_instance.MoveTo(
                     x0 + random.randint(50, 300), y0 + random.randint(50, 300)
-                )  # noqa: S311
+                )
         except Exception as e:
             self._last_error = str(e)
             raise KeyError(f"_safe_click点击操作失败: {self._last_error}") from e

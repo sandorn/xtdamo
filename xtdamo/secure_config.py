@@ -28,7 +28,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 from .dependencies import CRYPTO_AVAILABLE, WIN32_AVAILABLE
 
@@ -47,7 +47,7 @@ class DmCredentials:
     DEFAULT_REG_CODE = "jv965720b239b8396b1b7df8b768c919e86e10f"
     DEFAULT_VER_INFO = "ddsyyc365"
 
-    def __init__(self, config_dir: Optional[str] = None):
+    def __init__(self, config_dir: str | None = None):
         """初始化认证信息管理器
 
         Args:
@@ -83,7 +83,7 @@ class DmCredentials:
             print(f"加密器初始化失败: {e}")
             self.cipher = None
 
-    def store_plain_config(self, config: Dict[str, Any]) -> bool:
+    def store_plain_config(self, config: dict[str, Any]) -> bool:
         """存储明文配置到JSON文件
 
         Args:
@@ -100,7 +100,7 @@ class DmCredentials:
             print(f"存储明文配置失败: {e}")
             return False
 
-    def load_plain_config(self) -> Dict[str, Any]:
+    def load_plain_config(self) -> dict[str, Any]:
         """从JSON文件加载明文配置
 
         Returns:
@@ -108,13 +108,13 @@ class DmCredentials:
         """
         try:
             if self.config_file.exists():
-                with open(self.config_file, "r", encoding="utf-8") as f:
+                with open(self.config_file, encoding="utf-8") as f:
                     return json.load(f)
         except Exception as e:
             print(f"加载明文配置失败: {e}")
         return {}
 
-    def store_encrypted_config(self, config: Dict[str, Any]) -> bool:
+    def store_encrypted_config(self, config: dict[str, Any]) -> bool:
         """存储加密配置
 
         Args:
@@ -137,7 +137,7 @@ class DmCredentials:
             print(f"存储加密配置失败: {e}")
             return False
 
-    def load_encrypted_config(self) -> Dict[str, Any]:
+    def load_encrypted_config(self) -> dict[str, Any]:
         """加载加密配置
 
         Returns:
@@ -190,7 +190,7 @@ class DmCredentials:
             print(f"存储Windows凭据失败: {e}")
             return False
 
-    def load_windows_credential(self, target_name: str) -> Optional[str]:
+    def load_windows_credential(self, target_name: str) -> str | None:
         """从Windows凭据管理器加载
 
         Args:
@@ -259,7 +259,7 @@ class DmCredentials:
             os.environ["DM_VER_INFO"] = ver_info
             return True
 
-        elif storage_method == "windows":
+        if storage_method == "windows":
             success1 = self.store_windows_credential(
                 "xtdamo_dm_reg_code", "user", reg_code
             )
@@ -268,17 +268,16 @@ class DmCredentials:
             )
             return success1 and success2
 
-        elif storage_method == "encrypted":
+        if storage_method == "encrypted":
             config = {"dm_reg_code": reg_code, "dm_ver_info": ver_info}
             return self.store_encrypted_config(config)
 
-        elif storage_method == "plain":
+        if storage_method == "plain":
             config = {"dm_reg_code": reg_code, "dm_ver_info": ver_info}
             return self.store_plain_config(config)
 
-        else:
-            print(f"不支持的存储方式: {storage_method}")
-            return False
+        print(f"不支持的存储方式: {storage_method}")
+        return False
 
 
 # 创建全局实例

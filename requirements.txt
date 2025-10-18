@@ -1,4 +1,5 @@
 # xtdamo 项目依赖
+# 注意：大漠插件仅支持32位Python环境，请使用32位Python安装依赖
 pywin32>=306
 typing-extensions>=4.0.0
 

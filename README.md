@@ -17,13 +17,23 @@ xtdamo 提供了对大漠插件的高级封装，简化了与窗口、鼠标、�
 
 ### 系统要求
 
--   Python 3.8+
+-   **Python 3.8+ (32 位版本)** - 大漠插件仅支持 32 位 Python 环境
 -   Windows 操作系统
 -   大漠插件（dm.dll）
 
+> **重要提示**: 大漠插件只能在 32 位 Python 环境下运行，请确保使用 32 位 Python 版本。
+
 ### 安装方法
 
-1. **从源码安装**：
+1. **创建 32 位 Python 虚拟环境**：
+
+```bash
+# 确保使用32位Python创建虚拟环境
+python -m venv .venv --python=python3.12-32  # 或指定32位Python路径
+.venv\Scripts\activate  # Windows
+```
+
+2. **从源码安装**：
 
 ```bash
 git clone https://github.com/sandorn/xtdamo.git
@@ -31,11 +41,13 @@ cd xtdamo
 pip install -e .
 ```
 
-2. **从 PyPI 安装**（计划中）：
+3. **从 PyPI 安装**（计划中）：
 
 ```bash
 pip install xtdamo
 ```
+
+> **注意**: 请确保在 32 位 Python 环境中安装和运行项目。
 
 ### 大漠插件配置
 

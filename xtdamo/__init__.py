@@ -13,19 +13,12 @@ Github       : https://github.com/sandorn/home
 
 from __future__ import annotations
 
-__name__ = "pydamo"
+__name__ = 'xtdamo'
+__version__ = '0.1.0'
 
 from .config import Config
 from .damo import DmExcute
-from .dependencies import (
-    CRYPTO_AVAILABLE,
-    DependencyChecker,
-    WIN32_AVAILABLE,
-    WIN32GUI_AVAILABLE,
-    check_dependency,
-    get_available_dependencies,
-    get_missing_dependencies,
-)
+from .dependencies import CRYPTO_AVAILABLE, WIN32_AVAILABLE, WIN32GUI_AVAILABLE, DependencyChecker, check_dependency, get_available_dependencies, get_missing_dependencies
 from .enum_wind import get_windows_by_criteria
 from .secure_config import DmCredentials, dm_credentials
 
@@ -33,18 +26,20 @@ from .secure_config import DmCredentials, dm_credentials
 DM = DmExcute
 
 __all__ = (
-    "DmExcute",
-    "DM",  # 向后兼容
-    "Config",
-    "DmCredentials",
-    "dm_credentials",
-    "get_windows_by_criteria",
+    'CRYPTO_AVAILABLE',
+    'DM',  # 向后兼容
+    'WIN32GUI_AVAILABLE',
+    'WIN32_AVAILABLE',
+    'Config',
     # 依赖检查相关
-    "DependencyChecker",
-    "check_dependency",
-    "get_available_dependencies",
-    "get_missing_dependencies",
-    "CRYPTO_AVAILABLE",
-    "WIN32_AVAILABLE",
-    "WIN32GUI_AVAILABLE",
+    'DependencyChecker',
+    'DmCredentials',
+    'DmExcute',
+    'check_dependency',
+    'dm_credentials',
+    'get_available_dependencies',
+    'get_missing_dependencies',
+    'get_windows_by_criteria',
+    # 版本信息
+    '__version__',
 )

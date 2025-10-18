@@ -4,6 +4,10 @@
 
 ## 开发环境设置
 
+### 重要提示
+
+**xtdamo 项目基于大漠插件，仅支持 32 位 Python 环境。** 请确保使用 32 位 Python 进行开发。
+
 ### 1. 克隆项目
 
 ```bash
@@ -11,13 +15,27 @@ git clone https://github.com/sandorn/xtdamo.git
 cd xtdamo
 ```
 
-### 2. 安装开发依赖
+### 2. 创建 32 位 Python 虚拟环境
+
+```bash
+# 确保使用32位Python
+python -m venv .venv --python=python3.12-32
+.venv\Scripts\activate  # Windows
+```
+
+### 3. 验证环境
+
+```bash
+python check_environment.py
+```
+
+### 4. 安装开发依赖
 
 ```bash
 pip install -e ".[dev]"
 ```
 
-### 3. 安装预提交钩子
+### 5. 安装预提交钩子
 
 ```bash
 pre-commit install
