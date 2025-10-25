@@ -27,35 +27,37 @@ from __future__ import annotations
 
 from importlib.util import find_spec
 
+from xtlog import mylog
+
 
 class DependencyChecker:
     """依赖检查工具类"""
 
     # 项目依赖映射
     DEPENDENCIES = {
-        "cryptography": {
-            "package": "cryptography",
-            "import": "cryptography.fernet",
-            "description": "加密功能支持",
-            "optional": True,
+        'cryptography': {
+            'package': 'cryptography',
+            'import': 'cryptography.fernet',
+            'description': '加密功能支持',
+            'optional': True,
         },
-        "win32cred": {
-            "package": "pywin32",
-            "import": "win32cred",
-            "description": "Windows凭据管理器支持",
-            "optional": True,
+        'win32cred': {
+            'package': 'pywin32',
+            'import': 'win32cred',
+            'description': 'Windows凭据管理器支持',
+            'optional': True,
         },
-        "win32con": {
-            "package": "pywin32",
-            "import": "win32con",
-            "description": "Windows常量支持",
-            "optional": True,
+        'win32con': {
+            'package': 'pywin32',
+            'import': 'win32con',
+            'description': 'Windows常量支持',
+            'optional': True,
         },
-        "win32gui": {
-            "package": "pywin32",
-            "import": "win32gui",
-            "description": "Windows GUI支持",
-            "optional": True,
+        'win32gui': {
+            'package': 'pywin32',
+            'import': 'win32gui',
+            'description': 'Windows GUI支持',
+            'optional': True,
         },
     }
 
@@ -72,7 +74,7 @@ class DependencyChecker:
         if name not in cls.DEPENDENCIES:
             return False
 
-        import_name = cls.DEPENDENCIES[name]["import"]
+        import_name = cls.DEPENDENCIES[name]['import']
         try:
             return find_spec(import_name) is not None
         except Exception:
@@ -122,13 +124,11 @@ class DependencyChecker:
             return None
 
         info = cls.DEPENDENCIES[name].copy()
-        info["available"] = str(cls.check_dependency(name))
+        info['available'] = str(cls.check_dependency(name))
         return info
 
     @classmethod
-    def get_installation_commands(
-        cls, missing_deps: list[str] | None = None
-    ) -> list[str]:
+    def get_installation_commands(cls, missing_deps: list[str] | None = None) -> list[str]:
         """获取安装命令
 
         Args:
@@ -145,38 +145,36 @@ class DependencyChecker:
 
         for dep_name in missing_deps:
             if dep_name in cls.DEPENDENCIES:
-                package = cls.DEPENDENCIES[dep_name]["package"]
+                package = cls.DEPENDENCIES[dep_name]['package']
                 packages.add(package)
 
         for package in packages:
-            commands.append(f"pip install {package}")
+            commands.append(f'pip install {package}')
 
         return commands
 
     @classmethod
     def print_dependency_report(cls) -> None:
         """打印依赖报告"""
-        print("=== xtdamo 依赖检查报告 ===")
-        print()
+        mylog.info('=== xtdamo 依赖检查报告 ===')
 
         for name, info in cls.DEPENDENCIES.items():
             available = cls.check_dependency(name)
-            status = "[OK] 可用" if available else "[X] 缺失"
-            optional = " (可选)" if info["optional"] else " (必需)"
+            status = '[OK] 可用' if available else '[X] 缺失'
+            optional = ' (可选)' if info['optional'] else ' (必需)'
 
-            print(f"{name}: {status}{optional}")
-            print(f"  包名: {info['package']}")
-            print(f"  描述: {info['description']}")
-            print()
+            mylog.info(f'{name}: {status}{optional}')
+            mylog.info(f'  包名: {info["package"]}')
+            mylog.info(f'  描述: {info["description"]}')
 
         missing = cls.get_missing_dependencies()
         if missing:
-            print("缺失依赖安装命令:")
+            mylog.info('缺失依赖安装命令:')
             commands = cls.get_installation_commands(missing)
             for cmd in commands:
-                print(f"  {cmd}")
+                mylog.warning(f'  {cmd}')
         else:
-            print("[OK] 所有依赖都已安装")
+            mylog.success('[OK] 所有依赖都已安装')
 
 
 # 便捷函数
@@ -201,16 +199,16 @@ def get_missing_dependencies() -> list[str]:
 
 
 # 预定义的依赖检查结果
-CRYPTO_AVAILABLE = check_dependency("cryptography")
-WIN32_AVAILABLE = check_dependency("win32cred") and check_dependency("win32con")
-WIN32GUI_AVAILABLE = check_dependency("win32gui")
+CRYPTO_AVAILABLE = check_dependency('cryptography')
+WIN32_AVAILABLE = check_dependency('win32cred') and check_dependency('win32con')
+WIN32GUI_AVAILABLE = check_dependency('win32gui')
 
 
 # 使用示例
-if __name__ == "__main__":
+if __name__ == '__main__':
     DependencyChecker.print_dependency_report()
 
-    print("\n=== 快速检查 ===")
-    print(f"加密支持: {'✅' if CRYPTO_AVAILABLE else '❌'}")
-    print(f"Windows凭据管理器: {'✅' if WIN32_AVAILABLE else '❌'}")
-    print(f"Windows GUI: {'✅' if WIN32GUI_AVAILABLE else '❌'}")
+    mylog.info('\n=== 快速检查 ===')
+    mylog.info(f'加密支持: {"✅" if CRYPTO_AVAILABLE else "❌"}')
+    mylog.info(f'Windows凭据管理器: {"✅" if WIN32_AVAILABLE else "❌"}')
+    mylog.info(f'Windows GUI: {"✅" if WIN32GUI_AVAILABLE else "❌"}')

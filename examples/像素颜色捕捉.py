@@ -13,11 +13,11 @@ Github       : https://github.com/sandorn/home
 
 from __future__ import annotations
 
-from xtdamo.time_utils import TimeTracker
-from xtdamo.damo import DmExcute
-
 import time
 from datetime import datetime
+
+from xtdamo.damo import DmExcute
+from xtdamo.time_utils import TimeTracker
 
 dm = DmExcute()
 
@@ -38,10 +38,8 @@ while time_tracker.during():  # 10s内捕捉鼠标当前位置的颜色
         color = dm.GetColor(x, y)
 
         # 获取当前时间
-        current_time = datetime.now().strftime("%H:%M:%S.%f")[:-3]
-        print(
-            f"{current_time},\t {x}:{y},\t color:{color}, \t 鼠标位置颜色RGB值:{conv_to_rgb(color)}"
-        )
+        current_time = datetime.now().strftime('%H:%M:%S.%f')[:-3]
+        print(f'{current_time},\t {x}:{y},\t color:{color}, \t 鼠标位置颜色RGB值:{conv_to_rgb(color)}')
     except KeyboardInterrupt:
-        print("--- stopped!")
+        print('--- stopped!')
         break

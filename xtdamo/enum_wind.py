@@ -22,6 +22,7 @@ Github       : https://github.com/sandorn/xtdamo
 - 异常处理和错误恢复
 ==============================================================
 """
+
 from __future__ import annotations
 
 from win32gui import EnumWindows, GetClassName, GetWindowText, IsWindow, IsWindowEnabled, IsWindowVisible
@@ -88,12 +89,12 @@ def get_title_winds(title_name=None, subset=1):
     return lt
 
 
-if __name__ == "__main__":
-    # class_name = "阿里邮箱"
-    # print(get_class_winds(class_name))
+if __name__ == '__main__':
+    class_name = '[管理员]'
+    print(get_class_winds(class_name))
 
-    title_name = "[管理员]"
+    title_name = '[管理员]'
     print(get_title_winds(title_name))
 
-    title_name = "[管理员]"
+    title_name = '[管理员]'
     print(get_windows_by_criteria(title_name=title_name))

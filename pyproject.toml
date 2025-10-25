@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xtdamo"
-version = "0.1.1"
+version = "0.2.0"
 description = "基于大漠插件的Python自动化封装库"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -28,8 +28,10 @@ classifiers = [
     "Environment :: Win32 (MS Windows)",
 ]
 dependencies = [
+    "cryptography>=46.0.3",
+    "pathlib>=1.0.1",
     "pywin32>=306",
-    "typing-extensions>=4.0.0",
+    "xtlog>=0.1.9",
 ]
 
 [project.optional-dependencies]

@@ -38,11 +38,11 @@ class CoreEngine:
             dm_instance: 大漠插件实例
         """
         if not dm_instance:
-            raise ValueError("dmobject cannot be None")
+            raise ValueError('dmobject cannot be None')
         self.dm_instance = dm_instance
 
     def __repr__(self):
-        return f"版本： {self.ver()} ID：{self.GetID()}"
+        return f'版本： {self.ver()} ID：{self.GetID()}'
 
     def GetDmCount(self):
         return self.dm_instance.GetDmCount()
@@ -85,15 +85,13 @@ class CoreEngine:
         x2,
         y2,
         pic_name,
-        delta_color="101010",
+        delta_color='101010',
         sim=Config.DEFAULT_SIMILARITY,
         dir=0,
         # intX=0,
         # intY=0,
     ):
-        return self.dm_instance.FindPic(
-            x1, y1, x2, y2, pic_name, delta_color=delta_color, sim=sim, dir=dir
-        )
+        return self.dm_instance.FindPic(x1, y1, x2, y2, pic_name, delta_color=delta_color, sim=sim, dir=dir)
 
     def FindColor(self, x1, y1, x2, y2, color, sim, dir, intX, intY):
         # _, x0, y0 = dm.FindColor(0, 0, 1200, 800, color = "757575", sim = 1.0, dir = 1,  intX = 0, intY = 0)
@@ -122,15 +120,133 @@ class CoreEngine:
 
     def BindWindow(
         self,
-        hwnd,
-        display=["normal", "gdi", "gdi2", "dx", "dx2"][1],
-        mouse=["normal", "windows", "windows2", "windows3", "dx", "dx2"][3],
-        keypad=["normal", "windows", "dx"][1],
-        mode=[0, 1, 2, 3, 4, 5, 6, 7, 101, 103][8],
-    ):
-        return self.dm_instance.BindWindow(hwnd, display, mouse, keypad, mode)
+        hwnd: int,
+        display: str | None = None,
+        mouse: str | None = None,
+        keypad: str | None = None,
+        public: str = 'dx.public.fake.window.min|dx.public.hack.speed',
+        mode: int | None = None,
+    ) -> int:
+        """绑定指定的窗口（核心方法）
 
-    def UnBindWindow(self):
+        将大漠插件的操作绑定到指定窗口，支持多种绑定模式。
+        这是底层绑定方法，通常由高级接口调用。
+
+        Args:
+            hwnd (int): 窗口句柄
+                - 可通过 FindWindow 等方法获取
+                - 必须是有效的窗口句柄
+
+            display (str | None, optional): 显示模式，默认使用Config配置 ('gdi')
+                - 'normal': 正常模式，前台可视，速度较慢
+                - 'gdi': GDI模式，兼容性好，推荐使用
+                - 'gdi2': GDI增强模式，速度更快
+                - 'dx': DirectX模式，速度快但兼容性差
+                - 'dx2': DirectX增强模式
+
+            mouse (str | None, optional): 鼠标模式，默认使用Config配置 ('windows3')
+                - 'normal': 正常模式，前台可视
+                - 'windows': Windows消息模式
+                - 'windows2': Windows增强模式
+                - 'windows3': Windows兼容模式，推荐使用
+                - 'dx': DirectX模式
+                - 'dx2': DirectX增强模式
+
+            keypad (str | None, optional): 键盘模式，默认使用Config配置 ('windows')
+                - 'normal': 正常模式，前台可视
+                - 'windows': Windows消息模式，推荐使用
+                - 'dx': DirectX模式
+
+            public (str, optional): 公共参数，默认为后台最小化和加速
+                - 'dx.public.fake.window.min': 伪装窗口最小化
+                - 'dx.public.hack.speed': 提升运行速度
+                - 多个参数用 '|' 分隔
+
+            mode (int | None, optional): 绑定模式，默认使用Config配置 (101)
+                - 0: 推荐模式，前台前台
+                - 1-7: 不同的兼容性模式
+                - 101: 推荐后台模式，兼容性好
+                - 103: 另一种后台模式
+
+        Returns:
+            int: 绑定结果
+                - 1: 绑定成功
+                - 0: 绑定失败
+
+        Examples:
+            使用默认配置绑定:
+            >>> hwnd = dm.FindWindow('', '窗口标题')
+            >>> result = dm.BindWindow(hwnd)
+            >>> if result == 1:
+            ...     print('绑定成功')
+
+            自定义绑定模式:
+            >>> result = dm.BindWindow(hwnd, display='dx2', mouse='windows3', keypad='windows', mode=101)
+
+            前台绑定（适用于调试）:
+            >>> result = dm.BindWindow(hwnd, display='normal', mouse='normal', keypad='normal', public='', mode=0)
+
+        Note:
+            - 绑定前请确保窗口句柄有效
+            - 后台模式需要管理员权限
+            - 不同游戏/程序可能需要不同的绑定模式组合
+            - 绑定失败时可通过 GetLastError() 获取错误信息
+            - 使用完毕后应调用 UnBindWindow() 解绑
+
+        See Also:
+            - UnBindWindow: 解绑窗口
+            - IsBind: 检查窗口是否已绑定
+            - Config.DEFAULT_BIND_CONFIG: 默认绑定配置
+        """
+        # 使用Config中的默认配置
+        bind_config = Config.get_bind_config(
+            display=display,
+            mouse=mouse,
+            keypad=keypad,
+            mode=mode,
+        )
+
+        return self.dm_instance.BindWindowEx(
+            hwnd,
+            bind_config['display'],
+            bind_config['mouse'],
+            bind_config['keypad'],
+            public,
+            bind_config['mode'],
+        )
+
+    def UnBindWindow(self) -> int:
+        """解绑窗口（核心方法）
+
+        解除当前窗口的绑定状态，释放底层资源。
+        这是底层解绑方法，通常由高级接口调用。
+
+        Returns:
+            int: 解绑结果
+                - 1: 解绑成功
+                - 0: 解绑失败
+
+        Examples:
+            基本使用:
+            >>> result = dm.UnBindWindow()
+            >>> if result == 1:
+            ...     print('解绑成功')
+
+            配合 BindWindow 使用:
+            >>> hwnd = dm.FindWindow('', '窗口标题')
+            >>> dm.BindWindow(hwnd)
+            >>> # ... 执行操作 ...
+            >>> dm.UnBindWindow()
+
+        Note:
+            - 这是底层方法，高级接口应使用 ApiProxy.解绑窗口
+            - 即使未绑定窗口也可以调用，不会报错
+            - 程序退出前应该解绑所有已绑定的窗口
+
+        See Also:
+            - BindWindow: 绑定窗口
+            - IsBind: 检查窗口是否已绑定
+        """
         return self.dm_instance.UnBindWindow()
 
     def IsBind(self, hwnd):
@@ -139,7 +255,7 @@ class CoreEngine:
     def MoveWindow(self, hwnd, x, y):
         return self.dm_instance.MoveWindow(hwnd, x, y)
 
-    def FindWindow(self, class_name="", title_name=""):
+    def FindWindow(self, class_name='', title_name=''):
         return self.dm_instance.FindWindow(class_name, title_name)
 
     def ClientToScreen(self, hwnd, x, y):
@@ -149,9 +265,7 @@ class CoreEngine:
         return self.dm_instance.ScreenToClient(hwnd, x, y)
 
     def FindWindowByProcess(self, process_name, class_name, title_name):
-        return self.dm_instance.FindWindowByProcess(
-            process_name, class_name, title_name
-        )
+        return self.dm_instance.FindWindowByProcess(process_name, class_name, title_name)
 
     def FindWindowByProcessId(self, process_id, class_, title):
         return self.dm_instance.FindWindowByProcessId(process_id, class_, title)
@@ -187,106 +301,16 @@ class CoreEngine:
         return self.dm_instance.EnumWindow(parent, title, class_name, filter)
 
     def EnumWindowByProcess(self, process_name, title, class_name, filter):
-        return self.dm_instance.EnumWindowByProcess(
-            process_name, title, class_name, filter
-        )
+        return self.dm_instance.EnumWindowByProcess(process_name, title, class_name, filter)
 
     def EnumWindowSuper(self, spec1, flag1, type1, spec2, flag2, type2, sort):
-        return self.dm_instance.EnumWindowSuper(
-            spec1, flag1, type1, spec2, flag2, type2, sort
-        )
-
-    def GetCursorPos(self, x=0, y=0):
-        return self.dm_instance.GetCursorPos(x, y)
-
-    def GetKeyState(self, vk_code):
-        return self.dm_instance.GetKeyState(vk_code)
-
-    def SetKeypadDelay(
-        self, type=["normal", "windows", "dx"][-1], delay=Config.DEFAULT_KEYBOARD_DELAY
-    ):
-        return self.dm_instance.SetKeypadDelay(type, delay)
-
-    def SetMouseDelay(
-        self, type=["normal", "windows", "dx"][-1], delay=Config.DEFAULT_MOUSE_DELAY
-    ):
-        return self.dm_instance.SetMouseDelay(type, delay)
-
-    def WaitKey(self, vk_code, time_out=0):
-        # vk_code = 'a'
-        # vk_code.__class__.__name__ == 'str'
-        # vk_code.upper()
-        # kk
-        # if(vk_code.__class__.)
-        return self.dm_instance.WaitKey(vk_code, time_out)
-
-    def KeyDown(self, vk_code):
-        return self.dm_instance.KeyDown(vk_code)
-
-    def KeyDownChar(self, key_str):
-        return self.dm_instance.KeyDownChar(key_str)
-
-    def KeyPress(self, vk_code):
-        return self.dm_instance.KeyPress(vk_code)
-
-    def KeyPressChar(self, key_str):
-        return self.dm_instance.KeyPressChar(key_str)
-
-    def KeyPressStr(self, key_str, delay):
-        return self.dm_instance.KeyPressStr(key_str, delay)
-
-    def KeyUp(self, vk_code):
-        return self.dm_instance.KeyUp(vk_code)
-
-    def KeyUpChar(self, key_str):
-        return self.dm_instance.KeyUpChar(key_str)
-
-    def LeftClick(self):
-        return self.dm_instance.LeftClick()
-
-    def LeftDoubleClick(self):
-        return self.dm_instance.LeftDoubleClick()
-
-    def LeftDown(self):
-        return self.dm_instance.LeftDown()
-
-    def LeftUp(self):
-        return self.dm_instance.LeftUp()
-
-    def MiddleClick(self):
-        return self.dm_instance.MiddleClick()
-
-    def MoveR(self, rx, ry):
-        return self.dm_instance.MoveR(rx, ry)
-
-    def MoveTo(self, x, y):
-        return self.dm_instance.MoveTo(x, y)
-
-    def MoveToEx(self, x, y, w, h):
-        return self.dm_instance.MoveToEx(x, y, w, h)
-
-    def RightClick(self):
-        return self.dm_instance.RightClick()
-
-    def RightDown(self):
-        return self.dm_instance.RightDown()
-
-    def RightUp(self):
-        return self.dm_instance.RightUp()
-
-    def WheelDown(self):
-        return self.dm_instance.WheelDown()
-
-    def WheelUp(self):
-        return self.dm_instance.WheelUp()
+        return self.dm_instance.EnumWindowSuper(spec1, flag1, type1, spec2, flag2, type2, sort)
 
     def FindData(self, hwnd, addr_range, data):
         return self.dm_instance.FindData(hwnd, addr_range, data)
 
     def FindDataEx(self, hwnd, addr_range, data, step, multi_thread, mode):
-        return self.dm_instance.FindDataEx(
-            hwnd, addr_range, data, step, multi_thread, mode
-        )
+        return self.dm_instance.FindDataEx(hwnd, addr_range, data, step, multi_thread, mode)
 
     def DoubleToData(self, value):
         return self.dm_instance.DoubleToData(value)
