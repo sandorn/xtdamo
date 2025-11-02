@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import ctypes
 import os
+from pathlib import Path
 from typing import Any
 
 from win32com.client import Dispatch
@@ -68,13 +69,13 @@ def _create_dm_object():
     try:
         dm_instance = Dispatch('dm.dmsoft')
         mylog.success('创建大漠COM对象[dm.dmsoft]成功!')
-        return dm_instance
-    except Exception as e:
+    except (OSError, RuntimeError, AttributeError, ImportError) as e:
         mylog.error(f'--- 创建大漠COM对象[dm.dmsoft]失败 --- 错误: {e}')
-        return None
+    else:
+        return dm_instance
 
 
-def _runas_admin(cmd, ishide=False, waitsed=10):
+def _runas_admin(cmd, ishide: bool = False, waitsed: int = 10):
     """以管理员权限运行命令
 
     使用 Windows ShellExecuteEx API 以管理员权限执行指定命令，
@@ -118,8 +119,6 @@ def _runas_admin(cmd, ishide=False, waitsed=10):
         - DmRegister.execute: 使用此函数进行注册
         - DmRegister.unregister: 使用此函数进行卸载
     """
-
-    # ctypes.windll.shell32.ShellExecuteW(None, "runas", "cmd.exe", f"/c {cmd}", None, 1)
 
     # 使用ShellExecuteEx 替代 ShellExecuteW ，以便等待进程完成
     # 结构体大小必须与ctypes.sizeof(SHELLEXECUTEINFO)一致
@@ -262,20 +261,25 @@ class DmRegister:
             - execute: 执行注册流程
             - _create_dm_object: 创建 COM 对象
         """
-        if not dll_directory:
-            # 使用新的默认路径
-            dll_directory = os.path.join(os.path.dirname(__file__), '.dm')
-            dll_directory = os.path.abspath(dll_directory)
+        # 1. 确定基础路径
+        base_path = Path(dll_directory) if dll_directory else Path(__file__).parent / '.dm'
 
-        # 构建dll文件路径
-        self.dll_path = dll_directory if dll_directory.endswith('.dll') else os.path.join(dll_directory, 'dm.dll')
+        # 2. 构建最终的 DLL 文件路径
+        # 如果路径本身就是一个 .dll 文件，则直接使用；否则，在其后追加 dm.dll
+        if base_path.suffix.lower() == '.dll':
+            self.dll_path = base_path.resolve()
+        else:
+            self.dll_path = (base_path / 'dm.dll').resolve()
 
-        # 构建注册命令
+        # 3. 构建注册命令
+        # Path 对象在 f-string 中会自动转换为字符串
         register_command = f'regsvr32.exe /s "{self.dll_path}"'
 
-        # 初始化时设为None，后续会被赋值为大漠插件对象
+        # 初始化状态
         self.dm_instance: Any | None = None
         self.is_registered: bool = False
+
+        # 执行注册
         self.execute(register_command)
 
     def execute(self, register_command):
@@ -331,11 +335,10 @@ class DmRegister:
         if is_admin:
             os.system(register_command)  # noqa: S605
             mylog.debug(f'注册大漠插件： {register_command} ')
+        elif _runas_admin(register_command):
+            mylog.debug(f'以ShellExecuteEx注册大漠插件： {register_command} ')
         else:
-            if _runas_admin(register_command):
-                mylog.debug(f'以ShellExecuteEx注册大漠插件： {register_command} ')
-            else:
-                mylog.error('注册命令执行失败或无法获取进程句柄')
+            mylog.error('注册命令执行失败或无法获取进程句柄')
 
         # 注册后再次尝试创建大漠对象
         self.dm_instance = _create_dm_object()
@@ -395,11 +398,10 @@ class DmRegister:
         if ctypes.windll.shell32.IsUserAnAdmin():
             os.system(unregister_command)  # noqa: S605
             mylog.debug(f'已取消注册大漠插件： {unregister_command}')
+        elif _runas_admin(unregister_command):
+            mylog.debug(f'以ShellExecuteEx取消注册大漠插件：{unregister_command}')
         else:
-            if _runas_admin(unregister_command):
-                mylog.debug(f'以ShellExecuteEx取消注册大漠插件：{unregister_command}')
-            else:
-                mylog.error('取消注册命令执行失败或无法获取进程句柄')
+            mylog.error('取消注册命令执行失败或无法获取进程句柄')
         self.is_registered = False
         self.dm_instance = None  # 清除大漠对象引用
 
@@ -437,7 +439,7 @@ if __name__ == '__main__':
             '\n',
             dm_reg.dm_instance.ver() if dm_reg.dm_instance else 'dm_instance is None',
         )
-    except Exception as e:
+    except (OSError, RuntimeError, AttributeError, ImportError) as e:
         mylog.error(f'发生错误: {e}')
 
     mylog.info('程序结束')
