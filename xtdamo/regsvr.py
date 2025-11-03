@@ -154,7 +154,7 @@ def _runas_admin(cmd, ishide: bool = False, waitsed: int = 10):
     success = ctypes.windll.shell32.ShellExecuteExW(ctypes.byref(sei))
 
     if success and sei.hProcess:
-        # 等待进程完成，设置超时为10秒
+        # 等待进程完成，超时为10秒
         ctypes.windll.kernel32.WaitForSingleObject(sei.hProcess, 1000 * waitsed)
         ctypes.windll.kernel32.CloseHandle(sei.hProcess)  # 关闭进程句柄
         return True
